@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Tic-Tac-Toe</title>
+    <style>
+        /* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    background-color: #000; /* Black background */
+    color: white;
+}
+
+/* Title */
+h1 {
+    font-size: 2rem;
+    color: #00FFFF; /* Neon cyan */
+    text-shadow: 0px 0px 15px #00FFFF;
+}
+
+/* Status Text */
+#status {
+    font-size: 1.5rem;
+    margin: 10px 0;
+    color: white;
+    text-shadow: 0px 0px 10px white;
+}
+
+/* Game Board */
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 120px);
+    grid-template-rows: repeat(3, 120px);
+    gap: 5px;
+    justify-content: center;
+    margin: 20px auto;
+    border: 4px solid white;
+    box-shadow: 0px 0px 15px white;
+}
+
+/* Cells */
+.cell {
+    width: 120px;
+    height: 120px;
+    background-color: black;
+    border: 3px solid white; /* Neon white grid */
+    font-size: 3.5rem; /* Bigger font */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0px 0px 15px white; /* White glow */
+}
+
+/* Winning cells */
+.cell.winning {
+    background-color: #FFD700;
+    color: black;
+    text-shadow: none;
+}
+
+/* Restart Button */
+#restart {
+    margin-top: 20px;
+    padding: 12px 20px;
+    font-size: 18px;
+    background-color: #FFD700;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    color: #222;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+#restart:hover {
+    background: #8B0000;
+    color: #FFD700;
+}
+
+    </style>
+</head>
+<body>
+
+    <h1>Neon Tic-Tac-Toe</h1>
+    <p id="status">Player X's Turn</p>
+
+    <!-- Color Selection -->
+    <div class="color-selection">
+        <label>Choose X Color: 
+            <select id="xColor">
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="yellow">Yellow</option>
+                <option value="pink">Pink</option>
+            </select>
+        </label>
+
+        <label>Choose O Color: 
+            <select id="oColor">
+                <option value="red">Red</option>
+                <option value="blue">Blue</option>
+                <option value="green">Green</option>
+                <option value="yellow">Yellow</option>
+                <option value="pink">Pink</option>
+            </select>
+        </label>
+    </div>
+
+    <!-- Tic-Tac-Toe Board -->
+    <div class="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+
+    <!-- Restart Button -->
+    <button id="restart">Restart Game</button>
+
+    <script>
+        const cells = document.querySelectorAll(".cell");
+const statusText = document.getElementById("status");
+const restartBtn = document.getElementById("restart");
+const xColorPicker = document.getElementById("xColor");
+const oColorPicker = document.getElementById("oColor");
+
+let board = ["", "", "", "", "", "", "", "", ""];
+let currentPlayer = "X";
+let running = true;
+
+const winningConditions = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+    [0, 4, 8], [2, 4, 6]             // Diagonals
+];
+
+function initializeGame() {
+    cells.forEach(cell => cell.addEventListener("click", cellClicked));
+    restartBtn.addEventListener("click", restartGame);
+    updateTurnMessage(); // ✅ Set initial turn message with color
+    running = true;
+}
+
+function cellClicked() {
+    const cellIndex = this.getAttribute("data-index");
+
+    if (board[cellIndex] !== "" || !running) {
+        return;
+    }
+
+    updateCell(this, cellIndex);
+    checkWinner();
+}
+
+function updateCell(cell, index) {
+    board[index] = currentPlayer;
+    cell.textContent = currentPlayer; // ✅ Assigns X or O
+    cell.style.color = "white"; // ✅ Always White Neon
+    cell.style.textShadow = "0px 0px 15px white"; // ✅ White Neon Glow
+
+    currentPlayer = currentPlayer === "X" ? "O" : "X"; // ✅ Switch turns
+    updateTurnMessage(); // ✅ Update turn message color
+}
+
+function updateTurnMessage() {
+    const playerColor = currentPlayer === "X" ? xColorPicker.value : oColorPicker.value;
+    statusText.textContent = `Player ${currentPlayer}'s Turn`;
+    statusText.style.color = getNeonColor(playerColor);
+    statusText.style.textShadow = `0px 0px 10px ${getNeonColor(playerColor)}`;
+}
+
+function getNeonColor(color) {
+    const neonColors = {
+        red: "#FF3131",
+        blue: "#00A2FF",
+        green: "#00FF00",
+        yellow: "#FFFF00",
+        pink: "#FF00FF"
+    };
+    return neonColors[color] || "#FFD700";
+}
+
+function checkWinner() {
+    let roundWon = false;
+
+    for (let condition of winningConditions) {
+        let [a, b, c] = condition;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+            roundWon = true;
+            cells[a].classList.add("winning");
+            cells[b].classList.add("winning");
+            cells[c].classList.add("winning");
+            statusText.textContent = `Player ${board[a]} Wins!`;
+            statusText.style.color = "gold"; // ✅ Winner message is gold
+            running = false;
+            return;
+        }
+    }
+
+    if (!board.includes("")) {
+        statusText.textContent = "It's a Draw!";
+        statusText.style.color = "white";
+        running = false;
+    }
+}
+
+function restartGame() {
+    board = ["", "", "", "", "", "", "", "", ""];
+    currentPlayer = "X";
+    running = true;
+
+    cells.forEach(cell => {
+        cell.textContent = ""; // ✅ Clears X & O symbols
+        cell.classList.remove("winning");
+        cell.style.color = "white";
+        cell.style.textShadow = "0px 0px 15px white";
+    });
+
+    updateTurnMessage(); // ✅ Reset turn message with color
+}
+
+initializeGame();
+
+    </script>
+
+</body>
+</html>
